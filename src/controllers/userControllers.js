@@ -123,8 +123,8 @@ const loginUser = async function (req, res) {
         batch: "uranium",
         organisation: "FunctionUp",
       },
-      "project1-uranium",
-      { expiresIn: "10min" }
+      "project3-uranium",
+      { expiresIn: "48h" }
     );
     res.setHeader("x-api-key", token);
     res.status(200).send({ status: true, data: token });
