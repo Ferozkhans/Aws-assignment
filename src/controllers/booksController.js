@@ -8,6 +8,9 @@ const { query } = require("express");
 const createBook = async function (req, res) {
   try {
     let user = req.body.userId;
+    validUser = req.userId
+    if(validUser.toString()!==user) {return res.status(403).send({staus:false,message:"Not Authorised!!"})}
+  
     let book = req.body
     let arr = Object.keys(book)
     let ISBNs = /^[0-9-]{14}$/.test(req.body.ISBN)
@@ -17,19 +20,19 @@ const createBook = async function (req, res) {
     let isbn = await booksModel.findOne({ ISBN: req.body.ISBN });
 
 
-    if (arr.length == 0) return res.status(400).send({ staus: false, Error: "Invalid request. Please provide Details" })
-    else if (Title) { return res.status(409).send({ Error: "This title already exist" }) }
-    else if (!book.title) return res.status(400).send({ staus: false, Error: "title is required" })
-    else if (!book.excerpt) return res.status(400).send({ staus: false, Error: "excerpt is required" })
-    else if (!book.userId) return res.status(400).send({ staus: false, Error: "userId is required" })
-    else if (mongoose.Types.ObjectId.isValid(req.body.userId) == false) return res.status(400).send({ staus: false, Error: "user Id is Invalid" })
-    else if (isbn) { return res.status(409).send({ Error: "This ISBN already exist" }) }
-    else if (!book.ISBN) return res.status(400).send({ staus: false, Error: "ISBN is required" })
-    else if (!book.category) return res.status(400).send({ staus: false, Error: "category is required" })
-    else if (!book.subcategory) return res.status(400).send({ staus: false, Error: "subcategory is required" })
-    else if (!book.releasedAt) return res.status(400).send({ staus: false, Error: "releasedAT is required" })
-    else if (ISBNs === false) return res.status(400).send({ staus: false, Error: "Please Enter valid ISBN." })
-    else if (date === false) return res.status(400).send({ staus: false, Error: "Please Enter valid date formaat yyyy-mm-dd." })
+    if (arr.length == 0) return res.status(400).send({ staus: false, message: "Invalid request. Please provide Details" })
+    else if (Title) { return res.status(409).send({ message: "This title already exist" }) }
+    else if (!book.title) return res.status(400).send({ staus: false, message: "title is required" })
+    else if (!book.excerpt) return res.status(400).send({ staus: false, message: "excerpt is required" })
+    else if (!book.userId) return res.status(400).send({ staus: false, message: "userId is required" })
+    else if (mongoose.Types.ObjectId.isValid(req.body.userId) == false) return res.status(400).send({ staus: false, message: "user Id is Invalid" })
+    else if (isbn) { return res.status(409).send({ message: "This ISBN already exist" }) }
+    else if (!book.ISBN) return res.status(400).send({ staus: false, message: "ISBN is required" })
+    else if (!book.category) return res.status(400).send({ staus: false, message: "category is required" })
+    else if (!book.subcategory) return res.status(400).send({ staus: false, message: "subcategory is required" })
+    else if (!book.releasedAt) return res.status(400).send({ staus: false, message: "releasedAT is required" })
+    else if (ISBNs === false) return res.status(400).send({ staus: false, message: "Please Enter valid ISBN." })
+    else if (date === false) return res.status(400).send({ staus: false, message: "Please Enter valid date formaat yyyy-mm-dd." })
 
     if (req.body.isDeleted === true) {
       req.body.deletedAt = new Date().toLocaleString();
@@ -39,35 +42,34 @@ const createBook = async function (req, res) {
 
     if (Id) {
       let dataCreated = await booksModel.create(book);
-      res.status(201).send({ status: true, data: dataCreated });
+      res.status(201).send({status:true, message: 'Success',data: dataCreated });
     } else {
-      res.status(400).send({ status: false, Error: "USER does not exist!" });
+      res.status(400).send({ status: false, message: "USER does not exist!" });
     }
   } catch (err) {
-    res.status(500).send({ status: false, Error: "Server not responding.", error: err.message, });
+    res.status(500).send({ status: false, message: "Server not responding.", error: err.message, });
   }
 };
 
 // Get book
 
 const getBook = async function (req, res) {
-  let filterquery = req.query
-  filterquery.isDeleted = false
+  let filterquery= req.query
   try {
-
-    if (Object.keys(req.query).length == 0) {
+  
+    if (Object.keys(filterquery).length==0) {
       let books = await booksModel.find({ isDeleted: false }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1 }).sort({ title: 1 });
       // check data exits or not
-      if (books.length == 0) return res.status(404).send({ status: false, msg: 'Book Not Found' })
-      return res.status(200).send({ status: true, data: books });
+      if (books.length == 0) return res.status(404).send({ status: false, message: 'Book Not Found' })
+      return res.status(200).send({ status: true,message: 'Success', data: books });
     }
-    let result = await booksModel.find(filterquery)
-    console.log(filterquery)
-    if (result.length == 0) return res.status(404).send({ status: false, msg: 'Book Not Found' })
-    return res.status(200).send({ status: true, data: result });
+    let result= await booksModel.find({$and:[{isDeleted: false },filterquery]}).sort({ title: 1 });
+
+    if (result.length==0) return res.status(404).send({ status: false, message: 'Book Not Found' })
+    return res.status(200).send({ status: true, message: 'Success',data: result });
   }
   catch (err) {
-    return res.status(500).send({ status: false, msg: err.message })
+    return res.status(500).send({ status: false, message: err.message })
   }
 };
 
@@ -76,13 +78,13 @@ const getById = async function (req, res) {
   try {
     let data = req.params.bookId;
     let book = await booksModel.findOne({ _id: data }, { isDeleted: false });
-    if (!book) return res.status(404).send({ status: false, msg: 'Book Not Found' })
+    if (!book) return res.status(404).send({ status: false, message: 'Book Not Found' })
     book._doc["reviewdata"] = []
-    return res.status(200).send({ status: true, data: book });
+    res.status(200).send({status:true, message: 'Success',data:book });
   }
 
   catch (err) {
-    return res.status(500).send({ status: false, msg: err.message })
+    return res.status(500).send({ status: false, message: err.message })
   }
 }
 
@@ -93,15 +95,15 @@ const updateById = async function (req, res) {
     let updateData = req.body
     const { title, excerpt, releasedAt, ISBN } = updateData
     let duplicate = await booksModel.findOne({ $or: [{ title: title }, { ISBN: ISBN }] })
-    if (duplicate) return res.status(409).send({ status: false, msg: 'Title or ISBN already exist.' })
+    if (duplicate) return res.status(409).send({ status: false, message: 'Title or ISBN already exist.' })
     let book = await booksModel.findOneAndUpdate({ $and: [{ _id: data }, { isDeleted: false }] }, { title: title, excerpt: excerpt, releasedAt: releasedAt, ISBN: ISBN }, { new: true });
-    if (!book) return res.status(404).send({ status: false, msg: 'Book Not Found' })
+    if (!book) return res.status(404).send({ status: false, message: 'Book Not Found' })
 
-    return res.status(200).send({ status: true, data: book });
+    return res.status(200).send({ status: true,message: 'Success', data: book });
   }
 
   catch (err) {
-    return res.status(500).send({ status: false, msg: err.message })
+    return res.status(500).send({ status: false, message: err.message })
   }
 }
 
@@ -112,11 +114,11 @@ const deleteById = async function (req, res) {
     let book = await booksModel.findOneAndUpdate({ $and: [{ _id: data }, { isDeleted: false }] },
       { isDeleted: true, deletedAt: new Date().toLocaleString() }, { new: true });
 
-    if (!book) return res.status(404).send({ status: false, msg: 'Book Not Found or already deleted.' })
-    return res.status(200).send({ status: true, data: book });
+    if (!book) return res.status(404).send({ status: false, message: 'Book Not Found or already deleted.' })
+    return res.status(200).send({ status: true, message: 'Success',data: book });
   }
   catch (err) {
-    return res.status(500).send({ status: false, msg: err.message })
+    return res.status(500).send({ status: false, message: err.message })
   }
 }
 
