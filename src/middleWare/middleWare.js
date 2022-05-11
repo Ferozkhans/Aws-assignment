@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const bookModel = require("../models/booksModel");
 const mongoose = require('mongoose');
 
-const authentication=function(req,res,next){
+const authentication = function (req, res, next) {
     try {
         // getting token from req(header)
         let token = req.headers["x-api-key"];
@@ -10,11 +10,14 @@ const authentication=function(req,res,next){
         if (!token) {
             return res.status(400).send({ Error: "Enter x-api-key In Header" });
         }
+        let decodeToken = jwt.decode(token)
+        if (!decodeToken) {
+            return res.status(401).send({ status: false, msg: "Not a valid Token " })
+        }
         // token verification
-        let checktoken = jwt.verify(token, "project3-uranium",function(err,decode){
-            if (err) return res.status(401).send({msg:"please enter valid token"})
-            next()
-        });      
+        let checktoken = jwt.verify(token, "project3-uranium")
+        if (!checktoken) { return res.status(401).send({ msg: "please enter valid token" }) }
+        next()
     }
     catch (err) {
         res.status(500).send({ msg: err.message });
