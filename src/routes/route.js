@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require("../controllers/userControllers")
 const booksController = require("../controllers/booksController")
+const reviewController = require("../controllers/reviewControllers")
 const middleware = require("../middleWare/middleWare")
 
 
@@ -13,4 +14,7 @@ router.get("/getBook/:bookId", middleware.authentication,booksController.getById
 router.put("/updateBook/:bookId", middleware.authentication,middleware.authorisation,booksController.updateById)
 router.delete("/deleteBook/:bookId", middleware.authentication,middleware.authorisation,booksController.deleteById)
 
+router.post("/books/:bookId/review",reviewController.createReview)
+router.put("/books/:bookId/review/:reviewId",reviewController.updateReviewById)
+router.delete("/books/:bookId/review/:reviewId",reviewController.deleteReviewById)
 module.exports = router; 
