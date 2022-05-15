@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const bookModel = require("../models/booksModel");
 const mongoose = require('mongoose');
 const { request } = require("express");
-const { TokenExpiredError } = require("jsonwebtoken");
+
 
 const authentication = function (req, res, next) {
     try {
@@ -20,7 +20,7 @@ const authentication = function (req, res, next) {
         let checktoken = jwt.verify(token, "project3-uranium" )
         
         if (!checktoken) { return res.status(401).send({ status: false, message: "please enter valid token" }) }
-        if (TokenExpiredError) { return res.status(401).send({ status: false, message: "jwt token expired" }) }
+        
 
         req.userId = checktoken.userId;
 
