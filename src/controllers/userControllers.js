@@ -123,6 +123,7 @@ const loginUser = async function (req, res) {
         "project3-uranium",
         { expiresIn: "48h" }
       );
+      
       res.setHeader("x-api-key", token);
       res.status(200).send({ status: true, message: 'Success',data: token });
     }

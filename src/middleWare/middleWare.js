@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bookModel = require("../models/booksModel");
 const mongoose = require('mongoose');
+const { request } = require("express");
+const { TokenExpiredError } = require("jsonwebtoken");
 
 const authentication = function (req, res, next) {
     try {
@@ -14,9 +16,11 @@ const authentication = function (req, res, next) {
         if (!decodeToken) {
             return res.status(401).send({ status: false, message: "Not a valid Token " })
         }
-        // token verification
-        let checktoken = jwt.verify(token, "project3-uranium")
+        
+        let checktoken = jwt.verify(token, "project3-uranium" )
+        
         if (!checktoken) { return res.status(401).send({ status: false, message: "please enter valid token" }) }
+        if (TokenExpiredError) { return res.status(401).send({ status: false, message: "jwt token expired" }) }
 
         req.userId = checktoken.userId;
 
@@ -52,6 +56,19 @@ const authorisation = async function (req, res, next) {
         return res.status(500).send({ message: err.message });
     }
 }
+
+
+
+
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2Mjc5N2UwZmUzMTg1YjQyMmZhZjZiYzMiLCJiYXRjaCI6InVyYW5pdW0iLCJvcmdhbmlzYXRpb24iOiJGdW5jdGlvblVwIiwiaWF0IjoxNjUyMjcxMzYwLCJleHAiOjE2NTI0NDQxNjB9.sVsKvSJ0XaubFoVk_jQjMmg7d67tHsGAeUtlWexR9-Y
+
+
+
+
+
+
+
+
 
 
 module.exports.authentication = authentication;
