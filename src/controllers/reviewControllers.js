@@ -45,7 +45,7 @@ const updateReviewById = async function (req, res) {
         let data = req.params.bookId;
         let data1 = req.params.reviewId;
         let updateData = req.body
-        if (updateData.length == 0) return res.status(400).send({ staus: false, message: "Invalid request. Please provide Details in body and update" })
+        if (Object.keys(updateData).length == 0) return res.status(400).send({ staus: false, message: "Invalid request. Please provide Details in body and update" })
         if(!data){
             return res.status(400).send({ status: false, message: "plz provide bookid in params" })
         }
