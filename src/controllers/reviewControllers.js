@@ -8,7 +8,7 @@ const createReview = async function (req, res) {
       let data = req.body;
       let bookId = req.params.bookId;
       let date = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/.test(req.body.reviewedAt)
-      let ratings = /[0-9]/.test(req.body.rating)
+      let ratings = /[0-5]/.test(req.body.rating)
     if (Object.keys(data).length == 0) return res.status(400).send({ staus: false, message: "Invalid request. Please provide Details" })
     if (!data.bookId) { return res.status(400).send({ status: false, message: "BookId is required and provide details" }) }
     if (!data.rating) { return res.status(400).send({ status: false, message: "rating is required" }) }
@@ -16,7 +16,7 @@ const createReview = async function (req, res) {
     if(data.bookId!=bookId){ return res.status(400).send({ status: false, message: "plz provide valid bookid should be equal in body and param" })}
     if (data.reviewedBy == false) { return res.status(400).send({ status: false, message: "Please provide  reviwedBy name details ." }) }
     if (date === false) return res.status(400).send({ staus: false, message: "Please Enter valid date formaat yyyy-mm-dd." })
-     if (ratings === false) return res.status(400).send({ staus: false, message: "Please Mention rating Number" })
+     if (ratings === false) return res.status(400).send({ staus: false, message: "Please Mention rating Number [0-5] only " })
     if (data.review == 0) return res.status(400).send({ staus: false, message: "Please provide reviwes details" })
 
     let book = await booksModel.findOne({ _id: data.bookId, isDeleted: false })
