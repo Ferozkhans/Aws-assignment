@@ -4,6 +4,7 @@ const moment=require('moment')
 
 const booksSchema = new mongoose.Schema( { 
     title: {type:String, required:true, unique:true,trim:true},
+    bookCover:{type:String},
     excerpt: {type:String, required:true}, 
     userId: {type:ObjectId, required:true, ref:'User'},
     ISBN: {type:String, required:true, unique:true},
