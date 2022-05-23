@@ -11,7 +11,7 @@ const aws= require("aws-sdk")
 router.post("/register",userController.createUser)
 router.post("/login", userController.loginUser)
 // Book creation & update 
-router.post("/books", middleware.authentication,booksController.createBook) 
+router.post("/books",booksController.createBook) 
 router.get("/books", middleware.authentication, booksController.getBook)
 router.get("/books/:bookId", middleware.authentication,booksController.getById)
 router.put("/books/:bookId", middleware.authentication,middleware.authorisation,booksController.updateById)

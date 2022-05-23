@@ -4,18 +4,64 @@ const reviewModel = require("../models/reviewModel")
 const jwt = require("jsonwebtoken");
 const mongoose = require('mongoose');
 const { query } = require("express");
+const aws= require("aws-sdk")
 
 //create book
+aws.config.update({
+  accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
+  secretAccessKey: "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",
+  region: "ap-south-1"
+})
+let uploadFile= async ( file) =>{
+ return new Promise( function(resolve, reject) {
+  // this function will upload file to aws and return the link
+  let s3= new aws.S3({apiVersion: '2006-03-01'}); // we will be using the s3 service of aws
+
+  var uploadParams= {
+      ACL: "public-read",
+      Bucket: "classroom-training-bucket",  //HERE
+      Key: "abc/" + file.originalname, //HERE 
+      Body: file.buffer
+  }
+
+
+  s3.upload( uploadParams, function (err, data ){
+      if(err) {
+          return reject({"error": err})
+      }
+      console.log(data)
+      console.log("file uploaded succesfully")
+      return resolve(data.Location)
+  })
+
+  // let data= await s3.upload( uploadParams)
+  // if( data) return data.Location
+  // else return "there is an error"
+
+ })
+}
 const createBook = async function (req, res) {
   try {
+    let files= req.files
+    let Book = req.body
     let user = req.body.userId;
+    if(files && files.length>0){
+        //upload to s3 and get the uploaded link
+        // res.send the link back to frontend/postman
+        let uploadedFileURL= await uploadFile( files[0] )
+      Book.bookCover  = uploadedFileURL
+    }  else{
+      res.status(400).send({ msg: "No file found" })
+  }
+
+    
     validUser = req.userId
     if (mongoose.Types.ObjectId.isValid(user) == false) {
       return res.status(400).send({ status: false, message: "Invalid user id" })
     }
-    if (validUser !== user) { return res.status(403).send({ staus: false, message: "Not Authorised!!" }) }
+   // if (validUser !== user) { return res.status(403).send({ staus: false, message: "Not Authorised!!" }) }
 
-    let Book = req.body
+    
     let arr = Object.keys(Book)
     let ISBNs = /^[0-9-]{14}$/.test(req.body.ISBN)
     let date = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/.test(req.body.releasedAt) //YYYY-MM-DD
